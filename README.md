@@ -1,1 +1,1 @@
-Projects for CS 111 with Eggert at UCLA
+Projects for CS 111 with Prof. Eggert at UCLA

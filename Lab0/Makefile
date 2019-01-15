@@ -1,6 +1,6 @@
 #NAME: Mudith Mallajosyula
 #EMAIL: mudithm@g.ucla.edu
-#ID: 404937201
+#ID: ---------
 
 CC=gcc
 CFLAGS=-Wall -Wextra
@@ -15,7 +15,7 @@ clean:
 check: badInputCheck badOutputCheck segFaultCheck catchCheck dumpcoreCheck badArgumentCheck
 
 dist: $(TARFILES) 
-	tar cvzf lab0-404937201.tar.gz $(TARFILES) 
+	tar cvzf lab0----------.tar.gz $(TARFILES) 
 
 
 badInputCheck: lab0

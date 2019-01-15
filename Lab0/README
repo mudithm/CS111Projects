@@ -2,3 +2,47 @@ NAME: Mudith Mallajosyula
 EMAIL: mudithm@g.ucla.edu
 ID: 404937201
 
+Included Files:
+
+lab0.c -- the main C source file for the program.
+
+A command-line program that reads from an input source and writes to an output source.
+Input can be from a file, specified by the --input option, or from stdin.
+Output can be to a file, specified by the --output option, or to stdout.
+The --segfault option intentionally causes a segmentation fault, and the --catch
+option registers the SIGSEGV signal and catches the fault. The --dump-core option
+negates the --catch option if it is read after the --catch option.
+
+It uses the getopts library for interpreting command-line options.
+
+breakpoint.png -- a screenshot of GDB after a breakpoint at the location of the 
+		segmentation fault has been tripped.
+
+backtrace.png -- a screenshot of the backtrace of this segmentation fault.
+
+Makefile -- for creating the executable, the tarball, and performing tests
+
+The Makefile include the following targets:
+	lab0: the default target, which created the executable.
+	clean: removes all files created by the Makefile
+	dist: creates the tarball consisting of the source file, Makefile, 
+			screenshots, and the README.
+	check: performs the following checks on the executable.
+	badInputCheck: checks for the case when the input is unreadable
+	badOutputCheck: checks for the case when the output is unwriteable
+	segFaultCheck: checks for the case wnere the --segfault option is passed
+	catchCheck: checks for the case where both the --segfault and --catch
+			options are passed
+	dumpcoreCheck: checks for the case where the --segfault, --catch, and 
+			--dump-core options are passed, with the dump-core being the 
+			final option passed.
+	badArgumentCheck: checks for the case where a bad argument is passed
+
+
+Sources:
+	
+	example of getopt_long:
+	https://www.gnu.org/software/libc/manual/html_node/Getopt-Long-Option-Example.html
+	
+	multiline bash commands in the makefile:
+	https://stackoverflow.com/questions/10121182/multiline-bash-commands-in-makefile

@@ -1,1 +1,47 @@
-readme
+NAME: Mudith Mallajosyula
+EMAIL: mudithm@g.ucla.edu
+ID: ---------
+
+Included Files:
+
+lab1a.c -- the main C source file for the program.
+
+Acts as a simple shell interface. For now, only takes the options:
+	--verbose: list each option as it is performed
+	--rdonly <file>: adds a file descriptor in read only mode
+	--wronly <file>: adds a file descriptor in write only mode
+	--command <fd1> <fd2> <fd3> <command>: performs a command with stdin
+	   redirected from fd1, stdout redirected to fd2, and stderr redirected
+	   to fd3.
+
+It uses the getopts library for interpreting command-line options.
+
+
+Makefile -- for creating the executable, the tarball, and performing tests (eventually)
+
+The Makefile include the following targets:
+	lab1a: the default target, which created the executable (simpsh).
+	clean: removes all files created by the Makefile
+	dist: creates the tarball consisting of the source file, Makefile, 
+			screenshots, and the README.
+	
+
+Sources:
+	
+	example of getopt_long:
+	https://www.gnu.org/software/libc/manual/html_node/Getopt-Long-Option-Example.html
+	
+	multiline bash commands in the makefile:
+	https://stackoverflow.com/questions/10121182/multiline-bash-commands-in-makefile
+
+	strstr c function:
+	http://www.cplusplus.com/reference/cstring/strstr/
+
+
+	+ various man pages (dup2, execvp, close)
+
+Limitations:
+
+	The --command option cannot handle non-integer inputs for the file descriptor specifiers
+	It will also run any string following the file descriptor specifiers as a command, 
+	regardless of whether or not it is valid.

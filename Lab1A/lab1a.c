@@ -1,7 +1,7 @@
 /*
 NAME: Mudith Mallajosyula
 EMAIL: mudithm@g.ucla.edu
-ID: 404937201
+ID: ---------
 */
 
 #include <stdio.h>
@@ -34,7 +34,8 @@ int main(int argc, char *argv[])
 {
     int file_des = 0;
     int curr_fd = 0;
-    int *files = malloc(sizeof(int));
+    size_t files_size = 20;
+    int *files = malloc(files_size * sizeof(int));
     if (files == NULL)
     {
         fprintf(stderr, "Malloc error on Files array\n" );
@@ -42,9 +43,6 @@ int main(int argc, char *argv[])
     }
 
     int err = 0;
-
-    //printf("%d\n", argc );
-
 
     const struct option opts[] =
     {
@@ -72,34 +70,32 @@ int main(int argc, char *argv[])
             {
                 if (verbose)
                 {
-                    // do verbose stuff
                     fprintf(stdout, "--rdonly %s\n", optarg);
                 }
-                //do something here
                 curr_fd = open(optarg, O_RDONLY);
                 if (curr_fd != -1)
                 {
-                    //fprintf(stdout, "file desc: %d\n", file_des);
 
                 }
                 else
                 {
                     fprintf(stderr, ">>>error reading: %s\n", argv[option_index + 1]);
 
-                    //Handle Errors
-                    //###
-                    //###
-                    //###
-                    //sets err to max of itself and read err
-
 
 
                     err = (1 > err) ? 1 : err;
                 }
 
+
+                if ((size_t)file_des > files_size)
+                {
+                    files = (int*)realloc(files, files_size + 200 * sizeof(int));
+                    files_size += 200;
+                }
                 files[file_des] = curr_fd;
                 file_des++;
-                files = (int*)realloc(files, file_des * sizeof(int));
+
+
                 if (files == NULL)
                 {
                     fprintf(stderr, "realloc error on Files array\n" );
@@ -113,10 +109,7 @@ int main(int argc, char *argv[])
             {
                 //no argument too rdonly file
                 fprintf(stderr, "No argument to --rdonly option.\n");
-                //do sosmething to handle weird exith stuff
-                //#####
-                //#####
-                //#####
+
                 exit(1);
             }
             break;
@@ -132,28 +125,22 @@ int main(int argc, char *argv[])
                 curr_fd = open(optarg, O_WRONLY);
                 if (curr_fd != -1)
                 {
-                    //dup2(curr_fd, file_des);
-                    //fprintf(stdout, "file desc: %d\n", file_des);
 
-                    //close(curr_fd);
-                    //file_des++;
                 }
                 else
                 {
                     fprintf(stderr, ">>>error writing: %s\n", argv[option_index + 1]);
 
-                    //Handle Errors
-                    //###
-                    //###
-                    //###
 
-
-                    //sets err to max of itself and read err
                     err = (1 > err) ? 1 : err;
+                }
+                if ((size_t)file_des > files_size)
+                {
+                    files = (int*)realloc(files, files_size + 200 * sizeof(int));
+                    files_size += 200;
                 }
                 files[file_des] = curr_fd;
                 file_des++;
-                files = (int*)realloc(files, file_des * sizeof(int));
                 argno++;
 
             }
@@ -161,10 +148,7 @@ int main(int argc, char *argv[])
             {
                 //no argument too rdonly file
                 fprintf(stderr, "No argument to --wronly option.\n");
-                //do sosmething to handle weird exith stuff
-                //#####
-                //#####
-                //#####
+
                 exit(1);
             }
             break;
@@ -194,7 +178,6 @@ int main(int argc, char *argv[])
                     fprintf(stderr, "The file descsriptor you tried to reference is invalid. Does the file exist?\n");
                     exit(1);
                 }
-
 
 
                 argno += 3;
@@ -245,10 +228,6 @@ int main(int argc, char *argv[])
                 }
                 else
                 {
-                    // wait until parent process completes
-                    // while (proc == wait(NULL))
-                    //     continue;
-                    //finished
 
                 }
             }
@@ -268,11 +247,9 @@ int main(int argc, char *argv[])
 
     while (file_des >= 0)
     {
-        // fprintf(stdout, "Closing FD %d\n", file_des);
         close(files[file_des]);
         file_des--;
     }
-
 
     free(files);
     exit(err);

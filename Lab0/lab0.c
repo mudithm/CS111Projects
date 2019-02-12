@@ -27,15 +27,11 @@ void segFaultFunction()
     *p = 'a';
 }
 
-// signal handler for segmentation fault
-void segfault_handler(int signal_number)
+// signal handle
+void signal_handler(int signal_number)
 {
-    if (signal_number == SIGSEGV)
-    {
-        fprintf(stderr, "Caught and received SIGSEGV.\n");/*
-        fprintf(stderr, "Error %d: %s\n", errno, (char *)(strerror(errno)));*/
-        exit(4);
-    }
+    fprintf(stderr, "%d caught\n", signal_number);
+    exit(4);
 }
 
 int main(int argc, char *argv[])
@@ -101,7 +97,7 @@ int main(int argc, char *argv[])
             break;
         case 's':
             //if (catch_flag)
-             //   catch_flag = 0;
+            //   catch_flag = 0;
             segfault_flag = 1;
             break;
         default:
@@ -121,7 +117,7 @@ int main(int argc, char *argv[])
 
         // in case, somehow, no fault occurs
         fprintf(stderr, "Dumped Core.\n");
-        exit(139); 
+        exit(139);
     }
 
     if (input != NULL)

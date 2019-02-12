@@ -1,0 +1,38 @@
+NAME: Mudith Mallajosyula
+EMAIL: mudithm@g.ucla.edu
+ID: 404937201
+
+SLIPDAYS: 1
+
+
+2.1.1
+It takes many iterations before errors are seen because
+
+A significantly smaller number of iterations seldom fails because
+
+2.1.2
+The --yield runs are much slower because
+
+The additional time is going
+
+It is 
+
+2.1.3
+The average cost per operation drops with increasing iterations because the cost of creating and joining threads, and other setup tasks, becomes less significant compared to the total cost.
+
+We know how many iterations to run based on
+
+
+2.1.4
+The operations perform similarly for low numbers of threads because
+
+The three protected operations slow down as the number of threads rises because
+
+
+
+---
+
+2.2.1
+
+
+2.2.2

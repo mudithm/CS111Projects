@@ -1,0 +1,87 @@
+NAME: Mudith Mallajosyula
+EMAIL: mudithm@g.ucla.edu
+ID: 404937201
+
+Included Files:
+
+lab1b.c -- the main C source file for the program.
+
+Acts as a simple shell interface. For now, takes the options:
+	
+	--verbose: list each option as it is performed
+
+	--rdonly <file>: adds a file descriptor in read only mode
+	--wronly <file>: adds a file descriptor in write only mode
+	--rdwr <file>: adds a file descriptor in read/write mode
+	--pipe: creates a pipe spanning two file descriptors
+
+	--command <fd1> <fd2> <fd3> <command>: performs a command with stdin
+	   redirected from fd1, stdout redirected to fd2, and stderr redirected
+	   to fd3.
+	--wait: wait for all preceding commands to execure and print diagnostic
+		information about them to standard out
+
+	Oflag arguments open the file with the respective oflags, as described
+	in the spec.
+
+	--append
+	--cloexec
+	--creat
+	--directory
+	--dsync
+	--excl
+	--nofollow
+	--nonblock
+	--rsync
+	--sync
+	--trunc
+
+	Miscellaneous options:
+
+	--close N: close the file descriptor N
+	--abort: crash the shell with a segfault
+	--catch N: catch a signal N
+	--ignore N: ignore a signal N
+	--default N: use the default behavior for signal N
+	--pause: Pause and await a signal
+
+It uses the getopts library for interpreting command-line options.
+
+
+Makefile -- for creating the executable, the tarball, and performing tests (eventually)
+
+The Makefile include the following targets:
+	lab1b: the default target, which created the executable (simpsh).
+	clean: removes all files created by the Makefile
+	dist: creates the tarball consisting of the source file, Makefile, 
+			screenshots, and the README.
+	check: Will contain tests, eventually
+	
+
+Sources:
+	
+	example of getopt_long:
+	https://www.gnu.org/software/libc/manual/html_node/Getopt-Long-Option-Example.html
+	
+	multiline bash commands in the makefile:
+	https://stackoverflow.com/questions/10121182/multiline-bash-commands-in-makefile
+
+	strstr c function:
+	http://www.cplusplus.com/reference/cstring/strstr/
+
+	List of linux kill signals:
+	https://unix.stackexchange.com/questions/317492/list-of-kill-signals
+
+
+	+ various man pages (dup2, execvp, close, waitpid, pause, etc)
+
+
+
+Limitations:
+
+	The --command option cannot handle non-integer inputs for the file descriptor specifiers
+	It will also run any string following the file descriptor specifiers as a command, 
+	regardless of whether or not it is valid.
+
+	The simpsh also has a bug where it does not always wait in the parent process when the 
+	--wait option is passed

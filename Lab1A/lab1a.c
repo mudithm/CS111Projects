@@ -193,6 +193,7 @@ int main(int argc, char *argv[])
                     optind++;
                 }
                 argno--;
+                optind--;
 
                 if (verbose)
                 {

@@ -56,13 +56,13 @@ char *concatString(char *str1, char *str2)
     return str;
 }
 
-// Adds and subtracts 1, without protection
+// Makes and deletes list, without protection
 void listAdd(char index[][4])
 {
-
+    SortedList_t new;
+  
     for (int i = 0; i < numIterations; i++)
     {
-        SortedList_t new;
         new.next = NULL;
         new.prev = NULL;
         new.key = index[i];
@@ -73,11 +73,26 @@ void listAdd(char index[][4])
 
     // check length
 
+    if (SortedList_length(&new) != numIterations)
+      {
+	//bad stuff happened here
+      }
+
     //delete
+
+    SortedList_t *iter = (&new)->next;
+
+    while(iter != NULL)
+      {
+	SortedList_t *temp = iter->next;
+	SortedList_delete(iter);
+	iter = temp;
+      }
+    
 
 }
 
-// Adds and subtracts 1, without mutex locks
+// Makes and deletes lists, with mutex lock
 void listAdd_mutex(char index[][4])
 {
 
@@ -95,7 +110,7 @@ void listAdd_mutex(char index[][4])
     }
 }
 
-// Adds and subtracts 1, without spin lock
+// Makes and deletes lists, with spin lock
 void listAdd_spin(char index[][4])
 {
     for (int i = 0; i < numIterations; i++)
@@ -263,12 +278,7 @@ int main(int argc, char *argv[])
     {
         printf("---%d\n", thread_handlers[i]);
     }
-    /*
-        for (int i = 0; i < (int)size; i++)
-        {
-            printf("%d>>%s\n", i, keys[i]);
-        }
-    */
+
     // Default test type is add-none
     char* test_type = "list-";
 

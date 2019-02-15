@@ -21,7 +21,7 @@ dist: graphs $(TARFILES)
 	 tar -cvzf lab2a-404937201.tar.gz $(TARFILES) $(GRAPHS)
 
 clean:
-	rm -f lab2_add lab2_list *.tar.gz *.png *.csv
+	rm -f lab2_add lab2_list *.tar.gz
 
 tests: clean build add_tests.sh list_tests.sh 
 	bash -c ./add_tests.sh

@@ -1,18 +1,8 @@
-#~/bin/bash
+#!/bin/bash
 
-rm lab2_add.csv
+rm -f lab2_add.csv
 
-iter=100
-for i in `seq 1 10`;
-do 
-	for j in `seq 1 4`;
-	do
-		./lab2_add --threads=$i --iterations=$iter >> lab2_add.csv
-		(( iter = 10 * $iter ))
-	done
-	iter=100
-done
-
+# lab_add 1
 THREADS=(2 4 8 12)
 ITERATIONS=(10 20 40 80 100 1000 10000 100000)
 
@@ -24,56 +14,69 @@ do
 	done
 done
 
+# lab_add 2
+THREADS=(2 8)
+ITERATIONS=(100 1000 10000 100000)
 
 for k in ${THREADS[@]};
 do 
 	for l in ${ITERATIONS[@]};
 	do
-		./lab2_add --threads=$k --iterations=$l --sync=m >>  lab2_add.csv
+		./lab2_add --threads=$k --iterations=$l >> lab2_add.csv		
+		./lab2_add --yield --threads=$k --iterations=$l >> lab2_add.csv
 	done
 done
+
+# lab_add 3
+THREADS=(1)
+ITERATIONS=(10 20 40 80 100 1000 10000 100000)
 
 for k in ${THREADS[@]};
 do 
 	for l in ${ITERATIONS[@]};
 	do
-		./lab2_add --yield --threads=$k --iterations=$l --sync=m  >>  lab2_add.csv
+		./lab2_add --threads=$k --iterations=$l >> lab2_add.csv		
 	done
 done
 
-THREADS2=(2 4 6)
-ITERATIONS2=(10 20 40 80 100 1000)
-
-for k in ${THREADS2[@]};
-do 
-	for l in ${ITERATIONS2[@]};
-	do
-		./lab2_add --threads=$k --iterations=$l --sync=s  >>  lab2_add.csv
-	done
-done
-
-for k in ${THREADS2[@]};
-do 
-	for l in ${ITERATIONS2[@]};
-	do
-		./lab2_add --yield --threads=$k --iterations=$l --sync=s  >>  lab2_add.csv
-	done
-done
-
-
+#lab_add 4, mutex and CAS
+THREADS=(2 4 8 12)
+ITERATIONS=(10000)
 
 for k in ${THREADS[@]};
 do 
 	for l in ${ITERATIONS[@]};
 	do
-		./lab2_add --threads=$k --iterations=$l --sync=c  >>  lab2_add.csv
+		./lab2_add --yield --threads=$k --iterations=$l --sync=m>> lab2_add.csv		
+		./lab2_add --yield --threads=$k --iterations=$l --sync=c>> lab2_add.csv
 	done
 done
+
+#lab_add 4, spin
+THREADS=(2 4 8 12)
+ITERATIONS=(1000)
 
 for k in ${THREADS[@]};
 do 
 	for l in ${ITERATIONS[@]};
 	do
-		./lab2_add --yield --threads=$k --iterations=$l --sync=c  >>  lab2_add.csv
+		./lab2_add --yield --threads=$k --iterations=$l --sync=s>> lab2_add.csv
 	done
 done
+
+
+#lab_add 5, unprotected, mutex, spun and CAS
+THREADS=(1 2 4 8 12)
+ITERATIONS=(10000)
+
+for k in ${THREADS[@]};
+do 
+	for l in ${ITERATIONS[@]};
+	do
+		./lab2_add --threads=$k --iterations=$l --sync=m>> lab2_add.csv		
+		./lab2_add --threads=$k --iterations=$l --sync=c>> lab2_add.csv		
+		./lab2_add --threads=$k --iterations=$l >> lab2_add.csv
+		./lab2_add  --threads=$k --iterations=$l --sync=s>> lab2_add.csv
+	done
+done
+

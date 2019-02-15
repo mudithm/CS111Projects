@@ -27,8 +27,8 @@ static int numIterations = 1;
 static pthread_mutex_t mutex_lock;
 static int spin_lock = 0;
 
-static SortedList_t *shared_list;
-
+static SortedList_t shared_list;
+static SortedList_t *list_array;
 
 int opt_yield = 0;
 
@@ -57,76 +57,143 @@ char *concatString(char *str1, char *str2)
 }
 
 // Makes and deletes list, without protection
-void listAdd(char index[][4])
+void listAdd(int *offset)
 {
-    SortedList_t new;
-  
-    for (int i = 0; i < numIterations; i++)
+    for (int i = *offset; i < numIterations + *offset; i++)
     {
-        new.next = NULL;
-        new.prev = NULL;
-        new.key = index[i];
-        printf("Adding #%d: %s\n", i, new.key);
-
-        SortedList_insert(shared_list, &new);
+        SortedList_insert(&shared_list, &list_array[i]);
     }
 
-    // check length
+    // check length of the list
+    int len = SortedList_length(&shared_list);
 
-    if (SortedList_length(&new) != numIterations)
-      {
-	//bad stuff happened here
-      }
+    if (len < 0)
+    {
+        fprintf(stderr, "Corrupted list!\n");
+        exit(2);
+    }
 
-    //delete
+    //delete all added elements
 
-    SortedList_t *iter = (&new)->next;
-
-    while(iter != NULL)
-      {
-	SortedList_t *temp = iter->next;
-	SortedList_delete(iter);
-	iter = temp;
-      }
-    
-
+    for (int i = *offset; i < numIterations + *offset; i++)
+    {
+        //printf("Adding #%d: %s\n", i, list_array[i].key);
+        //fflush(stdout);
+        //mutex lock
+        //printf("%s is waiting on mutex lock:  -----------------------\n", list_array[i].key);
+        //fflush(stdout);
+        //printf("%s received lock.         -----------------------\n", list_array[i].key);
+        if (SortedList_delete(SortedList_lookup(&shared_list, (&list_array[i])->key)))
+        {
+            fprintf(stderr, "Error deleting element!\n");
+            exit(2);
+        }
+    }
 }
 
 // Makes and deletes lists, with mutex lock
-void listAdd_mutex(char index[][4])
+void listAdd_mutex(int *offset)
 {
-
-    for (int i = 0; i < numIterations; i++)
+    //printf("Offset: %d\n", *offset);
+    for (int i = *offset; i < numIterations + *offset; i++)
     {
-        SortedList_t new;
-        new.next = NULL;
-        new.prev = NULL;
-        new.key = index[i];
-        printf("Adding #%d: %s\n", i, new.key);
+        //printf("Adding #%d: %s\n", i, list_array[i].key);
+        //fflush(stdout);
         //mutex lock
+        //printf("%s is waiting on mutex lock:  -----------------------\n", list_array[i].key);
+        //fflush(stdout);
         pthread_mutex_lock(&mutex_lock);
-        SortedList_insert(shared_list, &new);
+        //printf("%s received lock.         -----------------------\n", list_array[i].key);
+        SortedList_insert(&shared_list, &list_array[i]);
+        pthread_mutex_unlock(&mutex_lock);
+    }
+
+    // check length of list
+    int len;
+    pthread_mutex_lock(&mutex_lock);
+    len = SortedList_length(&shared_list);
+    pthread_mutex_unlock(&mutex_lock);
+
+    if (len < 0)
+    {
+        fprintf(stderr, "Corrupted list!\n");
+        exit(2);
+    }
+
+    //delete all added elements
+
+    for (int i = *offset; i < numIterations + *offset; i++)
+    {
+        //printf("Adding #%d: %s\n", i, list_array[i].key);
+        //fflush(stdout);
+        //mutex lock
+        //printf("%s is waiting on mutex lock:  -----------------------\n", list_array[i].key);
+        //fflush(stdout);
+        pthread_mutex_lock(&mutex_lock);
+        //printf("%s received lock.         -----------------------\n", list_array[i].key);
+        if (SortedList_delete(SortedList_lookup(&shared_list, (&list_array[i])->key)))
+        {
+            fprintf(stderr, "Error deleting element!\n");
+            exit(2);
+        }
         pthread_mutex_unlock(&mutex_lock);
     }
 }
 
 // Makes and deletes lists, with spin lock
-void listAdd_spin(char index[][4])
+void listAdd_spin(int *offset)
 {
-    for (int i = 0; i < numIterations; i++)
+    for (int i = *offset; i < numIterations + *offset; i++)
     {
-        SortedList_t new;
-        new.next = NULL;
-        new.prev = NULL;
-        new.key = index[i];
-        printf("Adding #%d: %s\n", i, new.key);
-     	//spin lock
-     	while (__sync_lock_test_and_set(&spin_lock, 1))
-     		continue;
-        SortedList_insert(shared_list, &new);
+
+        // printf("Adding #%d: %s\n", i, list_array[i].key);
+        // fflush(stdout);
+
+        //spin lock
+        while (__sync_lock_test_and_set(&spin_lock, 1))
+            continue;
+        SortedList_insert(&shared_list, &list_array[i]);
         __sync_lock_release(&spin_lock);
-     
+
     }
+
+    // check length of list
+    int len;
+
+    while (__sync_lock_test_and_set(&spin_lock, 1))
+        continue;
+    len = SortedList_length(&shared_list);
+    __sync_lock_release(&spin_lock);
+
+    if (len < 0)
+    {
+        fprintf(stderr, "Corrupted list!\n");
+        exit(2);
+    }
+
+
+    //delete all added elements
+
+    for (int i = *offset; i < numIterations + *offset; i++)
+    {
+        //printf("Adding #%d: %s\n", i, list_array[i].key);
+        //fflush(stdout);
+        //mutex lock
+        //printf("%s is waiting on mutex lock:  -----------------------\n", list_array[i].key);
+        //fflush(stdout);
+        while (__sync_lock_test_and_set(&spin_lock, 1))
+            continue;        //printf("%s received lock.         -----------------------\n", list_array[i].key);
+
+        if (SortedList_delete(SortedList_lookup(&shared_list, (&list_array[i])->key)))
+        {
+            fprintf(stderr, "Error deleting element!\n");
+            exit(2);
+        }
+        __sync_lock_release(&spin_lock);
+    }
+
+
+
 
 }
 
@@ -138,7 +205,8 @@ int main(int argc, char *argv[])
         {"threads", required_argument, 0, 't'},
         {"iterations", required_argument, 0, 'i'},
         {"yield", required_argument, 0, 'y'},
-        {"sync", required_argument, 0, 's'}
+        {"sync", required_argument, 0, 's'},
+        {NULL, 0, NULL, 0}
     };
 
     // holds the current index of the opts[] array for getopt_long
@@ -244,22 +312,30 @@ int main(int argc, char *argv[])
 
     }
 
-    //list to be shared by threads
-    SortedList_t head;
-    head.prev = NULL;
-    head.next = NULL;
-    head.key = NULL;
 
-    shared_list = &head;
+
+    if (pthread_mutex_init(&mutex_lock, NULL) != 0)
+    {
+        printf("\n mutex init has failed\n");
+        exit(1);
+    }
+    //list to be shared by threads
+    SortedList_t *head = &shared_list;
+    head->prev = NULL;
+    head->next = NULL;
+    head->key = NULL;
+
 
     // keep track of number of items in list
     size_t size = numThreads * numIterations;
-    char keys[size][4];
     int thread_handlers[numThreads];
 
-
+    list_array = malloc(sizeof(SortedList_t) * size);
     // seed random number generator
     srand (time(NULL));
+
+
+
     // generate random keys
     for (int i = 0, tnum = 0; i < (int)size; i++)
     {
@@ -268,16 +344,25 @@ int main(int argc, char *argv[])
             tnum++;
         }
         //random 3 digit key
-        keys[i][0] = (char) random() % 26 + 'a'; // generates letter
-        keys[i][1] = (char) random() % 26 + 'a'; // generates letter
-        keys[i][2] = (char) random() % 26 + 'a'; // generates letter
-        keys[i][3] = 0;
+        char *keys = malloc(4);
+        keys[0] = (char) random() % 26 + 'a'; // generates letter
+        keys[1] = (char) random() % 26 + 'a'; // generates letter
+        keys[2] = (char) random() % 26 + 'a'; // generates letter
+        keys[3] = 0;
+        //printf("location %d: %s\n", i, keys);
+        list_array[i].key = keys;
     }
 
-    for (int i = 0; i < numThreads; i++)
-    {
-        printf("---%d\n", thread_handlers[i]);
-    }
+    /* for (int i = 0; i < size; i++)
+     {
+         printf("Key %d: %s\n", i, list_array[i].key);
+     }*/
+
+
+    /*    for (int i = 0; i < numThreads; i++)
+        {
+            printf("---%d\n", thread_handlers[i]);
+        }*/
 
     // Default test type is add-none
     char* test_type = "list-";
@@ -330,7 +415,7 @@ int main(int argc, char *argv[])
     // create n threads
     for (int i = 0; i < numThreads; i++)
     {
-        thread_err = pthread_create(&threads[i], NULL, listFunction, keys + thread_handlers[i]);
+        thread_err = pthread_create(&threads[i], NULL, listFunction, &(thread_handlers[i]));
         if (thread_err)
         {
             fprintf(stderr, "Error creating threads\n");
@@ -353,15 +438,26 @@ int main(int argc, char *argv[])
     clock_gettime(CLOCK_MONOTONIC, &end);
     long long end_time = end.tv_sec * 1000000000 + end.tv_nsec;
 
+    // check that final length of the list is 0
+    if (SortedList_length(&shared_list) != 0)
+    {
+        fprintf(stderr, "List was not length 0!\n");
+        exit(2);
+    }
+
     // test type
     test_type = concatString(test_type, suffix);
 
     // outputting csv statistics
     long long total_time = end_time - start_time; // total time, nanosec
-    long long numOperations = numThreads * numIterations * 2; // total number of operations
+    long long numOperations = numThreads * numIterations * 3; // total number of operations
     long long avg_time = total_time / numOperations; // average time per op, nanoseconds
     printf("%s,%d,%d,1,%lld,%lld,%lld\n", test_type, numThreads, numIterations, numOperations, total_time, avg_time);
 
+    pthread_mutex_destroy(&mutex_lock);
+
+
+    free(list_array);
     exit(0);
 }
 

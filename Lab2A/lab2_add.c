@@ -91,17 +91,17 @@ void addAndSubtract_compare(void *numIterations)
     {
         while (1)
         {
-        	prevCount = counter;
-        	currCount = prevCount + 1;
-        	if (__sync_val_compare_and_swap(&counter, prevCount, currCount) == prevCount)
-        		break;
+            prevCount = counter;
+            currCount = prevCount + 1;
+            if (__sync_val_compare_and_swap(&counter, prevCount, currCount) == prevCount)
+                break;
         }
-         while (1)
+        while (1)
         {
-        	prevCount = counter;
-        	currCount = prevCount - 1;
-        	if (__sync_val_compare_and_swap(&counter, prevCount, currCount) == prevCount)
-        		break;
+            prevCount = counter;
+            currCount = prevCount - 1;
+            if (__sync_val_compare_and_swap(&counter, prevCount, currCount) == prevCount)
+                break;
         }
     }
 }
@@ -115,7 +115,8 @@ int main(int argc, char *argv[])
         {"threads", required_argument, 0, 't'},
         {"iterations", required_argument, 0, 'i'},
         {"yield", no_argument, 0, 'y'},
-        {"sync", required_argument, 0, 's'}
+        {"sync", required_argument, 0, 's'},
+        {NULL, 0, NULL, 0}
     };
 
     // holds the current index of the opts[] array for getopt_long
@@ -243,7 +244,7 @@ int main(int argc, char *argv[])
             suffix = "-c";
         }
     }
-    else 
+    else
     {
         addFunction = &addAndSubtract;
         suffix = "-none";

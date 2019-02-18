@@ -1,0 +1,104 @@
+NAME: Mudith Mallajosyula
+EMAIL: mudithm@g.ucla.edu
+ID: 404937201
+
+SLIPDAYS: 5
+
+----------------------------------------------------
+
+Included Files:
+
+lab2a.c -- the main C source file for the program.
+
+		It uses the getopts library for interpreting command-line options.
+
+lab2_add.gp  -- gnuplot program to create add graphs 
+lab2_list.gp -- gnuplot program to create list graphs
+
+Various graphs created by the above two programs
+
+Makefile -- for creating the executable, the tarball, graphs, and performing tests
+
+
+The Makefile include the following targets:
+	build: the default target, which creates the executables (lab2_add, lab2_list).
+	clean: removes all programs created by the Makefile
+	dist: creates the tarball consisting of the source file, Makefile, 
+			graphs, data, and the README.
+	test: Contains tests for the add and list programs
+	
+Data -- lab2_add.csv and lab2_list.csv, created by the tests target
+
+---------------------------------------------------------
+
+
+Sources:
+	
+	example of getopt_long:
+	https://www.gnu.org/software/libc/manual/html_node/Getopt-Long-Option-Example.html
+	
+	multiline bash commands in the makefile:
+	https://stackoverflow.com/questions/10121182/multiline-bash-commands-in-makefile
+
+	strstr c function:
+	http://www.cplusplus.com/reference/cstring/strstr/
+
+	List of linux kill signals:
+	https://unix.stackexchange.com/questions/317492/list-of-kill-signals
+
+-------------------------------------------------------------
+
+Limitations:
+
+	the add-tests.sh file occasionally fails and the lab2_add.gp is unable to create all the images.
+
+
+------------------------------------------------------------
+
+======================
+QUESTIONS
+======================
+
+2.1.1
+It takes many iterations before errors are seen because the chance of two threads calling add() at the same time is much smaller for low numbers.
+
+A significantly smaller number of iterations seldom fails because it is unlikely that two add
+calls will be made at the same time.
+
+
+
+2.1.2
+The --yield runs are much slower because each yield call adds another context switch, and context switching is very time intensive. 
+
+The additional time corresponds to these context switches, and to the overhead of creating and joining threads. 
+
+If we use the --yield option, it is unlikely that we will get accurate per-operation timings, unless we are able to know with certainty how long each context switch will take and take that into account in our calculations. We could do this by putting our yield call in a helper function that tracks the time taken for the yields, and subtract that time from our total. 
+
+
+
+2.1.3
+The average cost per operation drops with increasing iterations because the cost of creating and joining threads, and other setup tasks, becomes less significant compared to the total cost, since these two operations remain relatively constant.
+
+If we take a large number of iterations, the setup costs become insignificant compared to the total cost, and the resulting per-iteration cost is much more accurate.
+
+
+2.1.4
+The operations perform similarly for low numbers of threads because, although the critical section for the unprotected add is not locked, each thread only enters the critical section for a short time, and it is unlikely that two threads will access it at the same time.
+
+The three protected operations slow down as the number of threads rises because, with more threads, there is a higher likelihood that two threads will try to access the critical section at the same time, meaning that more threads will have to wait.
+
+
+---
+
+2.2.1
+
+For the add graph, the mutex lock initially has a sharp rise in cost per number of threads, but then evens out later. This is likely because for low thread counts, the threads do not have to wait long, if at all, to access the critical section, because the likelihood of overlap is small.
+
+For the list graph, the cost per thread count rises at a fairly consistent linear rate; this is probably because the critical section is much longer. Inserting an element, rather than simply modifying a variable, is much more expensive, and so even for low thread counts, more time is spent waiting.
+
+
+2.2.2
+
+During the protected list operations, spin locks initially performed comparably to mutex locks, but experienced a sharp increase in cost with a higher thread count. Both mutex locks and spin locks had relatively linear cost increases with a higher thread count, but the spin lock had a spike in steepness at around 8 threads.
+
+This performance difference is likely because spin locks spend a lot of time polling while they wait for a lock, which ties up the CPU and prevents it from performing more useful tasks, while mutex locks use blocking, allowing the CPU more freedom. Blocking involves more overhead costs, but polling in a scenario where many threads are trying to access a critical section causes significant wait times.

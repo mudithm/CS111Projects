@@ -18,13 +18,14 @@ Lab1B/lab1b_sanity_script.sh
 Lab1B/untitiled.sh
 Lab1B/untitled.sh
 Lab1B/lab1-404937201.tar.gz
-../Lab1B/c21err.txt ../Lab1B/c21out.txt
-/Lab1B/c21*
-/Lab1B/c21err.txt
-/Lab1B/c21out.txt
-/Lab1B/test21io.txt
-/Lab1B/test21io2.txt
-/Lab1B/simpsh
+Lab1B/c21err.txt 
+Lab1B/c21out.txt
+Lab1B/c21*
+Lab1B/c21err.txt
+Lab1B/c21out.txt
+Lab1B/test21io.txt
+Lab1B/test21io2.txt
+Lab1B/simpsh
 Lab1C/err.txt 
 Lab1C/err.t
 Lab1C/file.t 

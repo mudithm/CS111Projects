@@ -3,7 +3,7 @@
 # purpose:
 #	 generate data reduction graphs for the multi-threaded list project
 #
-# input: lab2_list.csv
+# input: lab2b_list.csv
 #	1. test name
 #	2. # threads
 #	3. # iterations per thread
@@ -13,11 +13,12 @@
 #	7. run time per operation (ns)
 #
 # output:
-#	lab2_list-1.png ... cost per operation vs threads and iterations
-#	lab2_list-2.png ... threads and iterations that run (un-protected) w/o failure
-#	lab2_list-3.png ... threads and iterations that run (protected) w/o failure
-#	lab2_list-4.png ... cost per operation vs number of threads
-#
+#	lab2b_1.png ... throughput vs number of threads for mutex and spin-lock synched operations
+#	lab2b_2.png ... mean time per mutex wait and mean time per operation for mutex-synchronized list operations
+#	lab2b_3.png ... successful iterations vs. threads for each synchronization method
+#	lab2b_4.png ... throughput vs. number of threads for mutex synchronized partitioned lists
+#	lab2b_5.png ... throughput vs. number of threads for spin-lock-synchronized partitioned lists
+
 # Note:
 #	Managing data is simplified by keeping all of the results in a single
 #	file.  But this means that the individual graphing commands have to
@@ -34,18 +35,22 @@ set datafile separator ","
 # how many threads/iterations we can run without failure (w/o yielding)
 set title "List-1: Total Throughput vs Number of Threads for Various Synchronization Methods"
 set xlabel "Threads"
-set logscale x 10
+set logscale x 2
 set ylabel "Throughput (Operations per Second)"
 set logscale y 10
 set output 'lab2b_1.png'
 
-# grep out only single threaded, un-protected, non-yield results
+# grep out successful protected sum and list runs
 plot \
-     "< grep 'list-none-none,1,' lab2_list.csv" using ($3):($7) \
-	title 'raw' with linespoints lc rgb 'red', \
-     "< grep 'list-none-none,1,' lab2_list.csv" using ($3):($7)/(4*($3)) \
-	title '/4 x iterations' with linespoints lc rgb 'green'
-
+     "< grep -E \"add-m,[0-9]+,1000,\" lab2b.csv" using ($2):(1000000000/($6)) \
+	title 'add w/ mutex' with linespoints lc rgb 'red', \
+     "< grep -E \"add-s,[0-9]+,1000,\" lab2b.csv" using ($2):(1000000000/($6)) \
+	title 'add w/ spin lock' with linespoints lc rgb 'green', \
+      "< grep -E \"list-none-m,[0-9]+,1000,\" lab2b.csv" using ($2):(1000000000/($7)) \
+	title 'list w/ mutex' with linespoints lc rgb 'brown', \
+      "< grep -E \"list-none-s,[0-9]+,1000,\" lab2b.csv" using ($2):(1000000000/($7)) \
+	title 'list w/ spin lockx' with linespoints lc rgb 'blue', \
+ 
 
 set title "List-2: Unprotected Threads and Iterations that run without failure"
 set xlabel "Threads"

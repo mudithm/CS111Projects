@@ -1,0 +1,191 @@
+Total: 422 samples
+     331  78.4%  78.4%      422 100.0% listAdd_spin
+      65  15.4%  93.8%       65  15.4% __strcmp_sse42
+      13   3.1%  96.9%       43  10.2% SortedList_insert
+      13   3.1% 100.0%       48  11.4% SortedList_lookup
+       0   0.0% 100.0%      422 100.0% __clone
+       0   0.0% 100.0%      422 100.0% start_thread
+ROUTINE ====================== listAdd_spin in /u/cs/ugrad/mudith/Documents/CS111Projects/Lab2B/lab2_list.c
+   331    422 Total samples (flat / cumulative)
+     .      .  166:     }
+     .      .  167: }
+     .      .  168: 
+     .      .  169: // Makes and deletes lists, with spin lock
+     .      .  170: void listAdd_spin(int *offset)
+---
+     .      .  171: {
+     .      .  172:   struct timespec spin_start, spin_end;
+     .      .  173:   long long spin_start_time, spin_end_time;
+     .      .  174: 
+     .      .  175:   for (int i = *offset; i < numIterations + *offset; i++)
+     .      .  176:     {
+     .      .  177: 
+     .      .  178:         // printf("Adding #%d: %s\n", i, list_array[i].key);
+     .      .  179:         // fflush(stdout);
+     .      .  180: 
+     .      .  181:         //spin lock
+     .      .  182:       clock_gettime(CLOCK_MONOTONIC, &spin_start);
+     .      .  183: 	spin_start_time = spin_start.tv_sec * 1000000000 + spin_start.tv_nsec; 
+   209    209  184:         while (__sync_lock_test_and_set(&spin_lock, 1))
+     .      .  185:             continue;
+     .      .  186:       clock_gettime(CLOCK_MONOTONIC, &spin_end);
+     .      .  187:         spin_end_time = spin_end.tv_sec * 1000000000 + spin_end.tv_nsec;
+     1      1  188: 	protected_wait_time += (spin_end_time - spin_start_time);
+     .     43  189:         SortedList_insert(&shared_list, &list_array[i]);
+     .      .  190:         __sync_lock_release(&spin_lock);
+     .      .  191: 
+     .      .  192:     }
+     .      .  193: 
+     .      .  194:     // check length of list
+     .      .  195:     int len;
+     .      .  196: 
+     .      .  197: 
+     .      .  198:     
+     .      .  199: clock_gettime(CLOCK_MONOTONIC, &spin_start);
+     .      .  200: 	spin_start_time = spin_start.tv_sec * 1000000000 + spin_start.tv_nsec; 
+     .      .  201:         while (__sync_lock_test_and_set(&spin_lock, 1))
+     .      .  202:             continue;
+     .      .  203:       clock_gettime(CLOCK_MONOTONIC, &spin_end);
+     .      .  204: 	spin_end_time = spin_end.tv_sec * 1000000000 + spin_end.tv_nsec;
+     .      .  205: 	protected_wait_time += (spin_end_time - spin_start_time);
+     .      .  206:     len = SortedList_length(&shared_list);
+     .      .  207:     __sync_lock_release(&spin_lock);
+     .      .  208: 
+     .      .  209:     if (len < 0)
+     .      .  210:     {
+     .      .  211:         fprintf(stderr, "Corrupted list!\n");
+     .      .  212:         exit(2);
+     .      .  213:     }
+     .      .  214: 
+     .      .  215: 
+     .      .  216:     //delete all added elements
+     .      .  217: 
+     .      .  218:     for (int i = *offset; i < numIterations + *offset; i++)
+     .      .  219:     {
+     .      .  220:         //printf("Adding #%d: %s\n", i, list_array[i].key);
+     .      .  221:         //fflush(stdout);
+     .      .  222:         //mutex lock
+     .      .  223:         //printf("%s is waiting on mutex lock:  -----------------------\n", list_array[i].key);
+     .      .  224:         //fflush(stdout);
+     .      .  225: 
+     .      .  226: 
+     .      .  227:       clock_gettime(CLOCK_MONOTONIC, &spin_start);
+     .      .  228: 	spin_start_time = spin_start.tv_sec * 1000000000 + spin_start.tv_nsec; 
+   121    121  229:         while (__sync_lock_test_and_set(&spin_lock, 1))
+     .      .  230:             continue;
+     .      .  231:       clock_gettime(CLOCK_MONOTONIC, &spin_end);
+     .      .  232: 	spin_end_time = spin_end.tv_sec * 1000000000 + spin_end.tv_nsec;
+     .      .  233: 	protected_wait_time += (spin_end_time - spin_start_time);
+     .      .  234: 
+     .      .  235:       //printf("%s received lock.         -----------------------\n", list_array[i].key);
+     .      .  236: 
+     .     48  237:         if (SortedList_delete(SortedList_lookup(&shared_list, (&list_array[i])->key)))
+     .      .  238:         {
+     .      .  239:             fprintf(stderr, "Error deleting element!\n");
+     .      .  240:             exit(2);
+     .      .  241:         }
+     .      .  242:         __sync_lock_release(&spin_lock);
+     .      .  243:     }
+     .      .  244: 
+     .      .  245: 
+     .      .  246: 
+     .      .  247: 
+     .      .  248: }
+---
+     .      .  249: 
+     .      .  250: int main(int argc, char *argv[])
+     .      .  251: {
+     .      .  252: 
+     .      .  253:     const struct option opts[] =
+ROUTINE ====================== listAdd_spin in /u/cs/ugrad/mudith/Documents/CS111Projects/Lab2B/lab2_list.c
+   331    422 Total samples (flat / cumulative)
+     .      .  166:     }
+     .      .  167: }
+     .      .  168: 
+     .      .  169: // Makes and deletes lists, with spin lock
+     .      .  170: void listAdd_spin(int *offset)
+---
+     .      .  171: {
+     .      .  172:   struct timespec spin_start, spin_end;
+     .      .  173:   long long spin_start_time, spin_end_time;
+     .      .  174: 
+     .      .  175:   for (int i = *offset; i < numIterations + *offset; i++)
+     .      .  176:     {
+     .      .  177: 
+     .      .  178:         // printf("Adding #%d: %s\n", i, list_array[i].key);
+     .      .  179:         // fflush(stdout);
+     .      .  180: 
+     .      .  181:         //spin lock
+     .      .  182:       clock_gettime(CLOCK_MONOTONIC, &spin_start);
+     .      .  183: 	spin_start_time = spin_start.tv_sec * 1000000000 + spin_start.tv_nsec; 
+   209    209  184:         while (__sync_lock_test_and_set(&spin_lock, 1))
+     .      .  185:             continue;
+     .      .  186:       clock_gettime(CLOCK_MONOTONIC, &spin_end);
+     .      .  187:         spin_end_time = spin_end.tv_sec * 1000000000 + spin_end.tv_nsec;
+     1      1  188: 	protected_wait_time += (spin_end_time - spin_start_time);
+     .     43  189:         SortedList_insert(&shared_list, &list_array[i]);
+     .      .  190:         __sync_lock_release(&spin_lock);
+     .      .  191: 
+     .      .  192:     }
+     .      .  193: 
+     .      .  194:     // check length of list
+     .      .  195:     int len;
+     .      .  196: 
+     .      .  197: 
+     .      .  198:     
+     .      .  199: clock_gettime(CLOCK_MONOTONIC, &spin_start);
+     .      .  200: 	spin_start_time = spin_start.tv_sec * 1000000000 + spin_start.tv_nsec; 
+     .      .  201:         while (__sync_lock_test_and_set(&spin_lock, 1))
+     .      .  202:             continue;
+     .      .  203:       clock_gettime(CLOCK_MONOTONIC, &spin_end);
+     .      .  204: 	spin_end_time = spin_end.tv_sec * 1000000000 + spin_end.tv_nsec;
+     .      .  205: 	protected_wait_time += (spin_end_time - spin_start_time);
+     .      .  206:     len = SortedList_length(&shared_list);
+     .      .  207:     __sync_lock_release(&spin_lock);
+     .      .  208: 
+     .      .  209:     if (len < 0)
+     .      .  210:     {
+     .      .  211:         fprintf(stderr, "Corrupted list!\n");
+     .      .  212:         exit(2);
+     .      .  213:     }
+     .      .  214: 
+     .      .  215: 
+     .      .  216:     //delete all added elements
+     .      .  217: 
+     .      .  218:     for (int i = *offset; i < numIterations + *offset; i++)
+     .      .  219:     {
+     .      .  220:         //printf("Adding #%d: %s\n", i, list_array[i].key);
+     .      .  221:         //fflush(stdout);
+     .      .  222:         //mutex lock
+     .      .  223:         //printf("%s is waiting on mutex lock:  -----------------------\n", list_array[i].key);
+     .      .  224:         //fflush(stdout);
+     .      .  225: 
+     .      .  226: 
+     .      .  227:       clock_gettime(CLOCK_MONOTONIC, &spin_start);
+     .      .  228: 	spin_start_time = spin_start.tv_sec * 1000000000 + spin_start.tv_nsec; 
+   121    121  229:         while (__sync_lock_test_and_set(&spin_lock, 1))
+     .      .  230:             continue;
+     .      .  231:       clock_gettime(CLOCK_MONOTONIC, &spin_end);
+     .      .  232: 	spin_end_time = spin_end.tv_sec * 1000000000 + spin_end.tv_nsec;
+     .      .  233: 	protected_wait_time += (spin_end_time - spin_start_time);
+     .      .  234: 
+     .      .  235:       //printf("%s received lock.         -----------------------\n", list_array[i].key);
+     .      .  236: 
+     .     48  237:         if (SortedList_delete(SortedList_lookup(&shared_list, (&list_array[i])->key)))
+     .      .  238:         {
+     .      .  239:             fprintf(stderr, "Error deleting element!\n");
+     .      .  240:             exit(2);
+     .      .  241:         }
+     .      .  242:         __sync_lock_release(&spin_lock);
+     .      .  243:     }
+     .      .  244: 
+     .      .  245: 
+     .      .  246: 
+     .      .  247: 
+     .      .  248: }
+---
+     .      .  249: 
+     .      .  250: int main(int argc, char *argv[])
+     .      .  251: {
+     .      .  252: 
+     .      .  253:     const struct option opts[] =

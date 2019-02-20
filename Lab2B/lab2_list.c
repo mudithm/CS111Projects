@@ -27,6 +27,8 @@ static int numIterations = 1;
 static pthread_mutex_t mutex_lock;
 static int spin_lock = 0;
 
+static long long protected_wait_time = 0;
+
 static SortedList_t shared_list;
 static SortedList_t *list_array;
 
@@ -94,6 +96,8 @@ void listAdd(int *offset)
 // Makes and deletes lists, with mutex lock
 void listAdd_mutex(int *offset)
 {
+  struct timespec mutex_start, mutex_end;
+  long long mutex_start_time, mutex_end_time;
     //printf("Offset: %d\n", *offset);
     for (int i = *offset; i < numIterations + *offset; i++)
     {
@@ -102,16 +106,30 @@ void listAdd_mutex(int *offset)
         //mutex lock
         //printf("%s is waiting on mutex lock:  -----------------------\n", list_array[i].key);
         //fflush(stdout);
-        pthread_mutex_lock(&mutex_lock);
-        //printf("%s received lock.         -----------------------\n", list_array[i].key);
+      
+      clock_gettime(CLOCK_MONOTONIC, &mutex_start);
+	mutex_start_time = mutex_start.tv_sec * 1000000000 + mutex_start.tv_nsec;
+      pthread_mutex_lock(&mutex_lock);
+	clock_gettime(CLOCK_MONOTONIC, &mutex_end);
+	mutex_end_time = mutex_end.tv_sec * 1000000000 + mutex_end.tv_nsec;
+	protected_wait_time += (mutex_end_time - mutex_start_time);
+	//printf("%s received lock.         -----------------------\n", list_array[i].key);
         SortedList_insert(&shared_list, &list_array[i]);
         pthread_mutex_unlock(&mutex_lock);
     }
 
     // check length of list
     int len;
-    pthread_mutex_lock(&mutex_lock);
-    len = SortedList_length(&shared_list);
+
+
+  clock_gettime(CLOCK_MONOTONIC, &mutex_start);
+	mutex_start_time = mutex_start.tv_sec * 1000000000 + mutex_start.tv_nsec;
+      pthread_mutex_lock(&mutex_lock);
+	clock_gettime(CLOCK_MONOTONIC, &mutex_end);
+	mutex_end_time = mutex_end.tv_sec * 1000000000 + mutex_end.tv_nsec;
+	protected_wait_time += (mutex_end_time - mutex_start_time);
+
+	len = SortedList_length(&shared_list);
     pthread_mutex_unlock(&mutex_lock);
 
     if (len < 0)
@@ -129,9 +147,17 @@ void listAdd_mutex(int *offset)
         //mutex lock
         //printf("%s is waiting on mutex lock:  -----------------------\n", list_array[i].key);
         //fflush(stdout);
-        pthread_mutex_lock(&mutex_lock);
-        //printf("%s received lock.         -----------------------\n", list_array[i].key);
-        if (SortedList_delete(SortedList_lookup(&shared_list, (&list_array[i])->key)))
+      clock_gettime(CLOCK_MONOTONIC, &mutex_start);
+	mutex_start_time = mutex_start.tv_sec * 1000000000 + mutex_start.tv_nsec;      
+
+	pthread_mutex_lock(&mutex_lock);
+
+	clock_gettime(CLOCK_MONOTONIC, &mutex_end);
+	mutex_end_time = mutex_end.tv_sec * 1000000000 + mutex_end.tv_nsec;
+	protected_wait_time += (mutex_end_time - mutex_start_time);
+
+	//printf("%s received lock.         -----------------------\n", list_array[i].key);
+	if (SortedList_delete(SortedList_lookup(&shared_list, (&list_array[i])->key)))
         {
             fprintf(stderr, "Error deleting element!\n");
             exit(2);
@@ -143,15 +169,23 @@ void listAdd_mutex(int *offset)
 // Makes and deletes lists, with spin lock
 void listAdd_spin(int *offset)
 {
-    for (int i = *offset; i < numIterations + *offset; i++)
+  struct timespec spin_start, spin_end;
+  long long spin_start_time, spin_end_time;
+
+  for (int i = *offset; i < numIterations + *offset; i++)
     {
 
         // printf("Adding #%d: %s\n", i, list_array[i].key);
         // fflush(stdout);
 
         //spin lock
+      clock_gettime(CLOCK_MONOTONIC, &spin_start);
+	spin_start_time = spin_start.tv_sec * 1000000000 + spin_start.tv_nsec; 
         while (__sync_lock_test_and_set(&spin_lock, 1))
             continue;
+      clock_gettime(CLOCK_MONOTONIC, &spin_end);
+        spin_end_time = spin_end.tv_sec * 1000000000 + spin_end.tv_nsec;
+	protected_wait_time += (spin_end_time - spin_start_time);
         SortedList_insert(&shared_list, &list_array[i]);
         __sync_lock_release(&spin_lock);
 
@@ -160,8 +194,15 @@ void listAdd_spin(int *offset)
     // check length of list
     int len;
 
-    while (__sync_lock_test_and_set(&spin_lock, 1))
-        continue;
+
+    
+clock_gettime(CLOCK_MONOTONIC, &spin_start);
+	spin_start_time = spin_start.tv_sec * 1000000000 + spin_start.tv_nsec; 
+        while (__sync_lock_test_and_set(&spin_lock, 1))
+            continue;
+      clock_gettime(CLOCK_MONOTONIC, &spin_end);
+	spin_end_time = spin_end.tv_sec * 1000000000 + spin_end.tv_nsec;
+	protected_wait_time += (spin_end_time - spin_start_time);
     len = SortedList_length(&shared_list);
     __sync_lock_release(&spin_lock);
 
@@ -181,8 +222,17 @@ void listAdd_spin(int *offset)
         //mutex lock
         //printf("%s is waiting on mutex lock:  -----------------------\n", list_array[i].key);
         //fflush(stdout);
+
+
+      clock_gettime(CLOCK_MONOTONIC, &spin_start);
+	spin_start_time = spin_start.tv_sec * 1000000000 + spin_start.tv_nsec; 
         while (__sync_lock_test_and_set(&spin_lock, 1))
-            continue;        //printf("%s received lock.         -----------------------\n", list_array[i].key);
+            continue;
+      clock_gettime(CLOCK_MONOTONIC, &spin_end);
+	spin_end_time = spin_end.tv_sec * 1000000000 + spin_end.tv_nsec;
+	protected_wait_time += (spin_end_time - spin_start_time);
+
+      //printf("%s received lock.         -----------------------\n", list_array[i].key);
 
         if (SortedList_delete(SortedList_lookup(&shared_list, (&list_array[i])->key)))
         {
@@ -452,7 +502,8 @@ int main(int argc, char *argv[])
     long long total_time = end_time - start_time; // total time, nanosec
     long long numOperations = numThreads * numIterations * 3; // total number of operations
     long long avg_time = total_time / numOperations; // average time per op, nanoseconds
-    printf("%s,%d,%d,1,%lld,%lld,%lld\n", test_type, numThreads, numIterations, numOperations, total_time, avg_time);
+    long long avg_wait_time = protected_wait_time / ((numIterations * 2 + 1) * numThreads); // avg wait time per sync
+    printf("%s,%d,%d,1,%lld,%lld,%lld,%lld\n", test_type, numThreads, numIterations, numOperations, total_time, avg_time, avg_wait_time);
 
     pthread_mutex_destroy(&mutex_lock);
 

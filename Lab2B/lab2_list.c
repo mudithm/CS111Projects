@@ -112,24 +112,27 @@ char *concatString(char *str1, char *str2)
 // Makes and deletes list, without protection
 void listAdd(int *offset)
 {
-    Sublist_t list;
+    Sublist_t *list;
+    SortedList_t *head;
     for (int i = *offset; i < numIterations + *offset; i++)
     {
-        list = sublist_array[hash(list_array[i].key) % numSublists];
-        SortedList_insert(&(list.list_head), &list_array[i]);
+        list = &(sublist_array[hash(list_array[i].key) % numSublists]);
+        head = &(list->list_head);
+        SortedList_insert(head, &list_array[i]);
     }
 
-    int len;
+    int len = 0;
     // check length of the lists
     for (int i = 0; i < numSublists; i++)
     {
-        len = SortedList_length(&(sublist_array[i].list_head));
+        int temp_len = SortedList_length(head);
 
-        if (len < 0)
+        if (temp_len < 0)
         {
             fprintf(stderr, "Corrupted list!\n");
             exit(2);
         }
+        len += temp_len;
     }
 
 
@@ -143,8 +146,9 @@ void listAdd(int *offset)
         //printf("%s is waiting on mutex lock:  -----------------------\n", list_array[i].key);
         //fflush(stdout);
         //printf("%s received lock.         -----------------------\n", list_array[i].key);
-        list = sublist_array[hash(list_array[i].key) % numSublists];
-        if (SortedList_delete(SortedList_lookup(&(list.list_head), (&list_array[i])->key)))
+        list = &(sublist_array[hash(list_array[i].key) % numSublists]);
+        head = &(list->list_head);
+        if (SortedList_delete(SortedList_lookup(head, (&list_array[i])->key)))
         {
             fprintf(stderr, "Error deleting element!\n");
             exit(2);
@@ -185,7 +189,7 @@ void listAdd_mutex(int *offset)
     }
 
     // check length of list
-    int len;
+    int len = 0;
 
     for (int i = 0; i < numSublists; i++)
     {
@@ -201,16 +205,18 @@ void listAdd_mutex(int *offset)
         mutex_end_time = mutex_end.tv_sec * 1000000000 + mutex_end.tv_nsec;
         protected_wait_time += (mutex_end_time - mutex_start_time);
 
-        len = SortedList_length(head);
+        int temp_len = SortedList_length(head);
 
 
         pthread_mutex_unlock(&(list->mutex_lock));
 
-        if (len < 0)
+        if (temp_len < 0)
         {
             fprintf(stderr, "Corrupted list!\n");
             exit(2);
         }
+
+        len += temp_len;
     }
 
 
@@ -284,7 +290,7 @@ void listAdd_spin(int *offset)
     }
 
     // check length of list
-    int len;
+    int len = 0;
 
     for (int i = 0; i < numSublists; i++)
     {
@@ -301,15 +307,17 @@ void listAdd_spin(int *offset)
         spin_end_time = spin_end.tv_sec * 1000000000 + spin_end.tv_nsec;
         protected_wait_time += (spin_end_time - spin_start_time);
 
-        len = SortedList_length(head);
+        int temp_len = SortedList_length(head);
 
         __sync_lock_release(&(list->spin_lock));
 
-        if (len < 0)
+        if (temp_len < 0)
         {
             fprintf(stderr, "Corrupted list!\n");
             exit(2);
         }
+
+        len += temp_len;
     }
 
 
@@ -623,15 +631,24 @@ int main(int argc, char *argv[])
     clock_gettime(CLOCK_MONOTONIC, &end);
     long long end_time = end.tv_sec * 1000000000 + end.tv_nsec;
 
+    int len = 0;
+    SortedList_t *lst;
     // check that final length of the lists is 0
     for (int i = 0; i < numSublists; i++)
     {
+        lst = &(sublist_array[i].list_head);
+        int temp_len = SortedList_length(lst);
         //print2List(&(sublist_array[i].list_head));
-        if (SortedList_length(&(sublist_array[i].list_head)) != 0)
+        if (temp_len != 0)
         {
-            fprintf(stderr, "List was not length 0!\n");
+            fprintf(stderr, "Sublis %d was not length 0!\n", i);
             exit(2);
         }
+    }
+    if (len != 0)
+    {
+        fprintf(stderr, "List was not length 0!\n");
+        exit(2);
     }
 
     // test type
@@ -641,8 +658,8 @@ int main(int argc, char *argv[])
     long long total_time = end_time - start_time; // total time, nanosec
     long long numOperations = numThreads * numIterations * 3; // total number of operations
     long long avg_time = total_time / numOperations; // average time per op, nanoseconds
-    long long avg_wait_time = protected_wait_time / ((numIterations * 2 + 1) * numThreads); // avg wait time per sync
-    printf("%s,%d,%d,1,%lld,%lld,%lld,%lld\n", test_type, numThreads, numIterations, numOperations, total_time, avg_time, avg_wait_time);
+    long long avg_wait_time = protected_wait_time / ((numIterations * 3 + 1) * numThreads); // avg wait time per sync
+    printf("%s,%d,%d,%d,%lld,%lld,%lld,%lld\n", test_type, numThreads, numIterations, numSublists, numOperations, total_time, avg_time, avg_wait_time);
 
     free(list_array);
     free(sublist_array);

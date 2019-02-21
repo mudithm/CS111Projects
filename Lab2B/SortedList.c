@@ -10,7 +10,7 @@
 #include <string.h>
 #include "SortedList.h"
 
-
+// prints contents of the list, for debugging purposes
 void printList(SortedList_t *list)
 {
     if (list == NULL)
@@ -41,12 +41,16 @@ int opt_yield;
 void SortedList_insert(SortedList_t *list, SortedListElement_t *element)
 {
     // checks if the element to be added is empty
-    if (element == NULL)
+    if (element == NULL) {
+        fprintf(stderr, "Attempted to insert NULL element into list\n");
         return;
+    }
 
     // checks if the given list is empty
-    if (list == NULL)
+    if (list == NULL) {
+        fprintf(stderr, "Attempted to insert into empty list\n");
         return;
+    }
 
     // checks if the element is valid
     if (element->key == NULL)
@@ -58,6 +62,9 @@ void SortedList_insert(SortedList_t *list, SortedListElement_t *element)
     // checks if the list is the head node
     if (list->key != NULL)
         return;
+    //printf("Inserting into list: \n");
+    //printList(list);
+
 
     // list is empty
     if (list->next == NULL)
@@ -68,9 +75,9 @@ void SortedList_insert(SortedList_t *list, SortedListElement_t *element)
         }
         list->next = element;
         element->prev = list;
-       // printf(">>>>>>Added %s. List was empty.\n", element->key);
+        //printf(">>>>>>Added %s. List was empty.\n", element->key);
         //printList(list);
-        //fflush(stdout);
+        fflush(stdout);
         return;
     }
 
@@ -78,8 +85,12 @@ void SortedList_insert(SortedList_t *list, SortedListElement_t *element)
     SortedList_t *previous = list;
     SortedList_t *iter = list->next;
 
+    //printf("Comparing present key '%s' with new key '%s' --- \n", iter->key, k);
+
     while (iter != NULL && strcmp(iter->key, k) < 0)
     {
+        //printf("Comparing present key '%s' with new key '%s' --- \n", iter->key, k);
+
         previous = iter;
         iter = iter->next;
     }
@@ -99,6 +110,18 @@ void SortedList_insert(SortedList_t *list, SortedListElement_t *element)
         //printList(list);
 
         fflush(stdout);
+        return;
+    }
+
+    // new first element
+    if (previous == list)
+    {
+        element->next = list->next;
+        list->next->prev = element;
+        list->next = element;
+        element->prev = list;
+        //printf("inserting %s at the beginning of a non-empty list\n", element->key);
+        //printList(list);
         return;
     }
 
@@ -130,7 +153,7 @@ int SortedList_delete( SortedListElement_t *element)
         return 1;
 
     // opt_yield stuff
-    if (opt_yield & DELETE_YIELD){
+    if (opt_yield & DELETE_YIELD) {
         //printf("Delete yielding...\n");
         pthread_yield();
     }
@@ -140,6 +163,10 @@ int SortedList_delete( SortedListElement_t *element)
     if (element->next != NULL)
     {
         element->next->prev = element->prev;
+    }
+    else
+    {
+        element->prev->next = NULL;
     }
 
     return 0;
@@ -171,14 +198,14 @@ SortedListElement_t *SortedList_lookup(SortedList_t *list, const char *key)
             return iter;
 
         // opt_yield stuff
-        if (opt_yield & LOOKUP_YIELD){
+        if (opt_yield & LOOKUP_YIELD) {
             //printf("Lookup yielding in lookup... key %s\n", key);
             pthread_yield();
         }
 
         iter = iter->next;
     }
-
+    //printf("Couldn't find the elmeent you wanted.\n");
     // key not in the list
     return NULL;
 }
@@ -197,7 +224,7 @@ int SortedList_length(SortedList_t *list)
     {
         length++;
         // yield stuff here
-        if (opt_yield & LOOKUP_YIELD){
+        if (opt_yield & LOOKUP_YIELD) {
             //printf("lookup yielding in length...\n");
             pthread_yield();
         }

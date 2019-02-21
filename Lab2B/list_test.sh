@@ -13,8 +13,8 @@ for k in ${THREADS[@]};
 do 
 	for l in ${ITERATIONS[@]};
 	do
-		./lab2b_list --threads=$k --iterations=$l --sync=m>> lab2b_list.csv
-		./lab2b_list --threads=$k --iterations=$l --sync=s>> lab2b_list.csv
+		./lab2_list --threads=$k --iterations=$l --sync=m>> lab2b_list.csv
+		./lab2_list --threads=$k --iterations=$l --sync=s>> lab2b_list.csv
 	done
 done
 
@@ -26,7 +26,7 @@ for k in ${THREADS[@]};
 do 
 	for l in ${ITERATIONS[@]};
 	do
-		./lab2b_list --threads=$k --iterations=$l --yield=id --lists=4 >> lab2b_list.csv
+		./lab2_list --threads=$k --iterations=$l --yield=id --lists=4 >> lab2b_list.csv
 	done
 done
 
@@ -36,8 +36,8 @@ for k in ${THREADS[@]};
 do 
 	for l in ${ITERATIONS[@]};
 	do
-		./lab2b_list --threads=$k --iterations=$l --yield=id --lists=4 --sync=s >> lab2b_list.csv
-		./lab2b_list --threads=$k --iterations=$l --yield=id --lists=4 --sync=m >> lab2b_list.csv	done
+		./lab2_list --threads=$k --iterations=$l --yield=id --lists=4 --sync=s >> lab2b_list.csv
+		./lab2_list --threads=$k --iterations=$l --yield=id --lists=4 --sync=m >> lab2b_list.csv	done
 	done
 done
 #lab2b test 4 -- mutex
@@ -51,7 +51,7 @@ do
 	do
 		for m in ${LISTS[@]};
 		do
-			./lab2b_list --threads=$k --iterations=$l --lists=$m --sync=m >> lab2b_list.csv
+			./lab2_list --threads=$k --iterations=$l --lists=$m --sync=m >> lab2b_list.csv
 		done
 	done
 done
@@ -68,7 +68,7 @@ do
 	do
 		for m in ${LISTS[@]};
 		do
-			./lab2b_list --threads=$k --iterations=$l --lists=$m --sync=s >> lab2b_list.csv
+			./lab2_list --threads=$k --iterations=$l --lists=$m --sync=s >> lab2b_list.csv
 		done
 	done
 done

@@ -1,14 +1,14 @@
-Total: 1395 samples
-    1168  83.7%  83.7%     1395 100.0% listAdd_spin
-     170  12.2%  95.9%      170  12.2% __strcmp_sse42
-      28   2.0%  97.9%      108   7.7% SortedList_insert
-      27   1.9%  99.9%      118   8.5% SortedList_lookup
-       1   0.1%  99.9%        1   0.1% SortedList_length
-       1   0.1% 100.0%        1   0.1% _init
-       0   0.0% 100.0%     1395 100.0% __clone
-       0   0.0% 100.0%     1395 100.0% start_thread
+Total: 745 samples
+     557  74.8%  74.8%      745 100.0% listAdd_spin
+     130  17.4%  92.2%      130  17.4% __strcmp_sse42
+      32   4.3%  96.5%       98  13.2% SortedList_lookup
+      21   2.8%  99.3%       90  12.1% SortedList_insert
+       4   0.5%  99.9%        4   0.5% _init
+       1   0.1% 100.0%        1   0.1% __GI__IO_fflush
+       0   0.0% 100.0%      745 100.0% __clone
+       0   0.0% 100.0%      745 100.0% start_thread
 ROUTINE ====================== listAdd_spin in /u/cs/ugrad/mudith/Documents/CS111Projects/Lab2B/lab2_list.c
-  1168   1395 Total samples (flat / cumulative)
+   557    745 Total samples (flat / cumulative)
      .      .  251:     }
      .      .  252: }
      .      .  253: 
@@ -34,15 +34,15 @@ ROUTINE ====================== listAdd_spin in /u/cs/ugrad/mudith/Documents/CS11
      .      .  272:         clock_gettime(CLOCK_MONOTONIC, &spin_start);
      .      .  273:         spin_start_time = spin_start.tv_sec * 1000000000 + spin_start.tv_nsec;
      .      .  274: 
-   531    531  275:         while (__sync_lock_test_and_set(&(list->spin_lock), 1))
-     3      3  276:             continue;
+   370    370  275:         while (__sync_lock_test_and_set(&(list->spin_lock), 1))
+     1      1  276:             continue;
      .      .  277: 
      .      .  278:         clock_gettime(CLOCK_MONOTONIC, &spin_end);
      .      .  279:         spin_end_time = spin_end.tv_sec * 1000000000 + spin_end.tv_nsec;
      1      1  280:         protected_wait_time += (spin_end_time - spin_start_time);
      .      .  281: 
      .      .  282: 
-     .    108  283:         SortedList_insert(head, &list_array[i]);
+     .     90  283:         SortedList_insert(head, &list_array[i]);
      .      .  284:         //print2List(head);
      .      .  285: 
      .      .  286: 
@@ -62,14 +62,14 @@ ROUTINE ====================== listAdd_spin in /u/cs/ugrad/mudith/Documents/CS11
      .      .  300:         clock_gettime(CLOCK_MONOTONIC, &spin_start);
      .      .  301:         spin_start_time = spin_start.tv_sec * 1000000000 + spin_start.tv_nsec;
      .      .  302: 
-     1      1  303:         while (__sync_lock_test_and_set(&(list->spin_lock), 1))
+     .      .  303:         while (__sync_lock_test_and_set(&(list->spin_lock), 1))
      .      .  304:             continue;
      .      .  305: 
      .      .  306:         clock_gettime(CLOCK_MONOTONIC, &spin_end);
      .      .  307:         spin_end_time = spin_end.tv_sec * 1000000000 + spin_end.tv_nsec;
      .      .  308:         protected_wait_time += (spin_end_time - spin_start_time);
      .      .  309: 
-     .      1  310:         int temp_len = SortedList_length(head);
+     .      .  310:         int temp_len = SortedList_length(head);
      .      .  311: 
      .      .  312:         __sync_lock_release(&(list->spin_lock));
      .      .  313: 
@@ -99,16 +99,16 @@ ROUTINE ====================== listAdd_spin in /u/cs/ugrad/mudith/Documents/CS11
      .      .  337: 
      .      .  338:         clock_gettime(CLOCK_MONOTONIC, &spin_start);
      .      .  339:         spin_start_time = spin_start.tv_sec * 1000000000 + spin_start.tv_nsec;
-   630    630  340:         while (__sync_lock_test_and_set(&(list->spin_lock), 1))
-     2      2  341:             continue;
+   184    184  340:         while (__sync_lock_test_and_set(&(list->spin_lock), 1))
+     .      .  341:             continue;
      .      .  342:         clock_gettime(CLOCK_MONOTONIC, &spin_end);
      .      .  343:         spin_end_time = spin_end.tv_sec * 1000000000 + spin_end.tv_nsec;
-     .      .  344:         protected_wait_time += (spin_end_time - spin_start_time);
+     1      1  344:         protected_wait_time += (spin_end_time - spin_start_time);
      .      .  345: 
      .      .  346:         //printf("%s received lock.         -----------------------\n", list_array[i].key);
      .      .  347:         // print2List(&(list.list_head));
      .      .  348: 
-     .    118  349:         if (SortedList_delete(SortedList_lookup(head, list_array[i].key)))
+     .     98  349:         if (SortedList_delete(SortedList_lookup(head, list_array[i].key)))
      .      .  350:         {
      .      .  351:             fprintf(stderr, "Error deleting element %s!\n", list_array[i].key);
      .      .  352:             exit(2);
@@ -129,7 +129,7 @@ ROUTINE ====================== listAdd_spin in /u/cs/ugrad/mudith/Documents/CS11
      .      .  366: 
      .      .  367:     const struct option opts[] =
 ROUTINE ====================== listAdd_spin in /u/cs/ugrad/mudith/Documents/CS111Projects/Lab2B/lab2_list.c
-  1168   1395 Total samples (flat / cumulative)
+   557    745 Total samples (flat / cumulative)
      .      .  251:     }
      .      .  252: }
      .      .  253: 
@@ -155,15 +155,15 @@ ROUTINE ====================== listAdd_spin in /u/cs/ugrad/mudith/Documents/CS11
      .      .  272:         clock_gettime(CLOCK_MONOTONIC, &spin_start);
      .      .  273:         spin_start_time = spin_start.tv_sec * 1000000000 + spin_start.tv_nsec;
      .      .  274: 
-   531    531  275:         while (__sync_lock_test_and_set(&(list->spin_lock), 1))
-     3      3  276:             continue;
+   370    370  275:         while (__sync_lock_test_and_set(&(list->spin_lock), 1))
+     1      1  276:             continue;
      .      .  277: 
      .      .  278:         clock_gettime(CLOCK_MONOTONIC, &spin_end);
      .      .  279:         spin_end_time = spin_end.tv_sec * 1000000000 + spin_end.tv_nsec;
      1      1  280:         protected_wait_time += (spin_end_time - spin_start_time);
      .      .  281: 
      .      .  282: 
-     .    108  283:         SortedList_insert(head, &list_array[i]);
+     .     90  283:         SortedList_insert(head, &list_array[i]);
      .      .  284:         //print2List(head);
      .      .  285: 
      .      .  286: 
@@ -183,14 +183,14 @@ ROUTINE ====================== listAdd_spin in /u/cs/ugrad/mudith/Documents/CS11
      .      .  300:         clock_gettime(CLOCK_MONOTONIC, &spin_start);
      .      .  301:         spin_start_time = spin_start.tv_sec * 1000000000 + spin_start.tv_nsec;
      .      .  302: 
-     1      1  303:         while (__sync_lock_test_and_set(&(list->spin_lock), 1))
+     .      .  303:         while (__sync_lock_test_and_set(&(list->spin_lock), 1))
      .      .  304:             continue;
      .      .  305: 
      .      .  306:         clock_gettime(CLOCK_MONOTONIC, &spin_end);
      .      .  307:         spin_end_time = spin_end.tv_sec * 1000000000 + spin_end.tv_nsec;
      .      .  308:         protected_wait_time += (spin_end_time - spin_start_time);
      .      .  309: 
-     .      1  310:         int temp_len = SortedList_length(head);
+     .      .  310:         int temp_len = SortedList_length(head);
      .      .  311: 
      .      .  312:         __sync_lock_release(&(list->spin_lock));
      .      .  313: 
@@ -220,16 +220,16 @@ ROUTINE ====================== listAdd_spin in /u/cs/ugrad/mudith/Documents/CS11
      .      .  337: 
      .      .  338:         clock_gettime(CLOCK_MONOTONIC, &spin_start);
      .      .  339:         spin_start_time = spin_start.tv_sec * 1000000000 + spin_start.tv_nsec;
-   630    630  340:         while (__sync_lock_test_and_set(&(list->spin_lock), 1))
-     2      2  341:             continue;
+   184    184  340:         while (__sync_lock_test_and_set(&(list->spin_lock), 1))
+     .      .  341:             continue;
      .      .  342:         clock_gettime(CLOCK_MONOTONIC, &spin_end);
      .      .  343:         spin_end_time = spin_end.tv_sec * 1000000000 + spin_end.tv_nsec;
-     .      .  344:         protected_wait_time += (spin_end_time - spin_start_time);
+     1      1  344:         protected_wait_time += (spin_end_time - spin_start_time);
      .      .  345: 
      .      .  346:         //printf("%s received lock.         -----------------------\n", list_array[i].key);
      .      .  347:         // print2List(&(list.list_head));
      .      .  348: 
-     .    118  349:         if (SortedList_delete(SortedList_lookup(head, list_array[i].key)))
+     .     98  349:         if (SortedList_delete(SortedList_lookup(head, list_array[i].key)))
      .      .  350:         {
      .      .  351:             fprintf(stderr, "Error deleting element %s!\n", list_array[i].key);
      .      .  352:             exit(2);

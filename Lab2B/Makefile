@@ -17,7 +17,8 @@ graphs: tests
 	gnuplot lab2b_list.gp
 
 dist: graphs profile $(TARFILES)
-	 tar -cvzf lab2b-404937201.tar.gz $(TARFILES) $(GRAPHS)
+	rm -f profile
+	tar -cvzf lab2b-404937201.tar.gz $(TARFILES) $(GRAPHS)
 
 profile: build
 	mv lab2_list lab2b_temp_list
@@ -32,6 +33,7 @@ profile: build
 	rm -f raw.gperf
 	mv lab2b_temp_list lab2_list
 	cp profile profile.out
+
 
 clean:
 	rm -f lab2_list *.tar.gz

@@ -16,8 +16,8 @@ graphs: tests
 	chmod +x lab2b_list.gp
 	gnuplot lab2b_list.gp
 
-dist: graphs $(TARFILES) profile
-	 tar -cvzf lab2a-404937201.tar.gz $(TARFILES) $(GRAPHS)
+dist: graphs profile $(TARFILES)
+	 tar -cvzf lab2b-404937201.tar.gz $(TARFILES) $(GRAPHS)
 
 profile: build
 	mv lab2b_list lab2b_temp_list
@@ -27,10 +27,11 @@ profile: build
 	rm -f raw.gperf
 	LD_PRELOAD=/usr/local/cs/gperftools-2.7/lib/libprofiler.so \
 	CPUPROFILE=raw.gperf ./lab2b_list --threads=12 --iterations=1000 --sync=s
-	pprof --text lab2b_list raw.gperf > profile.out
-	pprof --list=listAdd_spin lab2b_list raw.gperf >> profile.out
+	pprof --text lab2b_list raw.gperf > profile
+	pprof --list=listAdd_spin lab2b_list raw.gperf >> profile
 	rm -f raw.gperf
 	mv lab2b_temp_list lab2b_list
+	cp profile profile.out
 
 clean:
 	rm -f lab2b_list *.tar.gz

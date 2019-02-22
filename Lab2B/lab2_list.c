@@ -641,7 +641,7 @@ int main(int argc, char *argv[])
         //print2List(&(sublist_array[i].list_head));
         if (temp_len != 0)
         {
-            fprintf(stderr, "Sublis %d was not length 0!\n", i);
+            fprintf(stderr, "options: %s Sublist %d was not length 0!\n", test_type, i);
             exit(2);
         }
     }

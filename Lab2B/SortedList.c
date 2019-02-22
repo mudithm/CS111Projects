@@ -8,7 +8,10 @@
 #include <pthread.h>
 #include <unistd.h>
 #include <string.h>
+#include <sched.h>
+
 #include "SortedList.h"
+
 
 // prints contents of the list, for debugging purposes
 void printList(SortedList_t *list)
@@ -71,7 +74,7 @@ void SortedList_insert(SortedList_t *list, SortedListElement_t *element)
     {
         if (opt_yield & INSERT_YIELD) {
             //printf("insert yielding...\n");
-            pthread_yield();
+            sched_yield();
         }
         list->next = element;
         element->prev = list;
@@ -97,7 +100,7 @@ void SortedList_insert(SortedList_t *list, SortedListElement_t *element)
 
     if (opt_yield & INSERT_YIELD) {
         //printf("insert yielding...\n");
-        pthread_yield();
+        sched_yield();
     }
 
     // got to the end of the list
@@ -155,7 +158,7 @@ int SortedList_delete( SortedListElement_t *element)
     // opt_yield stuff
     if (opt_yield & DELETE_YIELD) {
         //printf("Delete yielding...\n");
-        pthread_yield();
+        sched_yield();
     }
 
     element->prev->next = element->next;
@@ -200,7 +203,7 @@ SortedListElement_t *SortedList_lookup(SortedList_t *list, const char *key)
         // opt_yield stuff
         if (opt_yield & LOOKUP_YIELD) {
             //printf("Lookup yielding in lookup... key %s\n", key);
-            pthread_yield();
+            sched_yield();
         }
 
         iter = iter->next;
@@ -226,7 +229,7 @@ int SortedList_length(SortedList_t *list)
         // yield stuff here
         if (opt_yield & LOOKUP_YIELD) {
             //printf("lookup yielding in length...\n");
-            pthread_yield();
+            sched_yield();
         }
         iter = iter->next;
     }

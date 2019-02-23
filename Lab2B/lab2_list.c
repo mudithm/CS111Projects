@@ -62,7 +62,9 @@ void print2List(SortedList_t *list)
     if (list == NULL)
     {
         printf("invalid list\n");
-        exit(2);
+	free(list_array);
+	free(sublist_array);
+	exit(2);
     }
     printf("\n==================================\n");
     printf("============>printing list<========\n");
@@ -92,7 +94,9 @@ void segfault_handler(int signal_number)
     {
         fprintf(stderr, "Caught and received SIGSEGV.\n");/*
         fprintf(stderr, "Error %d: %s\n", errno, (char *)(strerror(errno)));*/
-        exit(2);
+	free(sublist_array);
+	free(list_array);
+	exit(2);
     }
 }
 
@@ -130,7 +134,9 @@ void listAdd(int *offset)
         if (temp_len < 0)
         {
             fprintf(stderr, "Corrupted list!\n");
-            exit(2);
+	    free(sublist_array);
+	    free(list_array);
+	    exit(2);
         }
         len += temp_len;
     }
@@ -151,7 +157,9 @@ void listAdd(int *offset)
         if (SortedList_delete(SortedList_lookup(head, (&list_array[i])->key)))
         {
             fprintf(stderr, "Error deleting element!\n");
-            exit(2);
+	    free(sublist_array);
+	    free(list_array);
+	    exit(2);
         }
     }
 }
@@ -213,7 +221,9 @@ void listAdd_mutex(int *offset)
         if (temp_len < 0)
         {
             fprintf(stderr, "Corrupted list!\n");
-            exit(2);
+	    free(sublist_array);
+	    free(list_array);
+	    exit(2);
         }
 
         len += temp_len;
@@ -245,7 +255,9 @@ void listAdd_mutex(int *offset)
         if (SortedList_delete(SortedList_lookup(head, (&list_array[i])->key)))
         {
             fprintf(stderr, "Error deleting element!\n");
-            exit(2);
+	    free(sublist_array);
+	    free(list_array);
+	    exit(2);
         }
         pthread_mutex_unlock(&(list->mutex_lock));
     }
@@ -314,7 +326,9 @@ void listAdd_spin(int *offset)
         if (temp_len < 0)
         {
             fprintf(stderr, "Corrupted list!\n");
-            exit(2);
+	    free(list_array);
+	    free(sublist_array);
+	    exit(2);
         }
 
         len += temp_len;
@@ -349,7 +363,9 @@ void listAdd_spin(int *offset)
         if (SortedList_delete(SortedList_lookup(head, list_array[i].key)))
         {
             fprintf(stderr, "Error deleting element %s!\n", list_array[i].key);
-            exit(2);
+            free(list_array);
+	    free(sublist_array);
+	    exit(2);
         }
         __sync_lock_release(&(list->spin_lock));
 
@@ -509,7 +525,9 @@ int main(int argc, char *argv[])
         if (sync_val == 'm' && pthread_mutex_init(&(sub->mutex_lock), NULL) != 0)
         {
             fprintf(stderr, "\n mutex init for sublist %d has failed\n", i);
-            exit(2);
+	    free(list_array);
+	    free(sublist_array);
+	    exit(2);
         }
 
         if (sync_val == 's')
@@ -612,7 +630,9 @@ int main(int argc, char *argv[])
         if (thread_err)
         {
             fprintf(stderr, "Error creating threads\n");
-            exit(2);
+	    free(list_array);
+	    free(sublist_array);
+	    exit(2);
         }
     }
 
@@ -623,7 +643,9 @@ int main(int argc, char *argv[])
         if (thread_err)
         {
             fprintf(stderr, "Error joining threads\n");
-            exit(2);
+	    free(list_array);
+	    free(sublist_array);
+	    exit(2);
         }
     }
 
@@ -642,13 +664,17 @@ int main(int argc, char *argv[])
         if (temp_len != 0)
         {
             fprintf(stderr, "options: %s Sublist %d was not length 0!\n", test_type, i);
-            exit(2);
+	    free(list_array);
+	    free(sublist_array);
+	    exit(2);
         }
     }
     if (len != 0)
     {
         fprintf(stderr, "List was not length 0!\n");
-        exit(2);
+	free(list_array);
+	free(sublist_array);
+	exit(2);
     }
 
     // test type

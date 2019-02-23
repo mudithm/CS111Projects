@@ -8,26 +8,33 @@ SLIPDAYS: 5
 
 Included Files:
 
-lab2a.c -- the main C source file for the program.
+lab2b_list.c -- the main C source file for the program.
 
 		It uses the getopts library for interpreting command-line options.
 
-lab2_add.gp  -- gnuplot program to create add graphs 
-lab2_list.gp -- gnuplot program to create list graphs
+SortedList.c -- implementation of a doubly-linked list of string keys
 
-Various graphs created by the above two programs
+SortedList.h -- header file for a doubly-linked list of string keys
+
+lab2b_list.gp -- gnuplot program to create list graphs
+
+Various graphs created by the above program
 
 Makefile -- for creating the executable, the tarball, graphs, and performing tests
 
 
 The Makefile include the following targets:
-	build: the default target, which creates the executables (lab2_add, lab2_list).
+
+	build: the default target, which creates the executables (lab2_add,
+	lab2_list).
 	clean: removes all programs created by the Makefile
 	dist: creates the tarball consisting of the source file, Makefile, 
-			graphs, data, and the README.
-	test: Contains tests for the add and list programs
+			graphs, data, profile, and the README.
+	test: Contains tests for the list program
+	profile: profiles the list program with 1000 iterations and spin-lock,
+	to see which parts of the program take the most time. Produces profile.out.
 	
-Data -- lab2_add.csv and lab2_list.csv, created by the tests target
+Data -- lab2b_list.csv, created by the tests target
 
 ---------------------------------------------------------
 
@@ -46,12 +53,18 @@ Sources:
 	List of linux kill signals:
 	https://unix.stackexchange.com/questions/317492/list-of-kill-signals
 
+	djb2 hash:
+	http://www.cse.yorku.ca/~oz/hash.html
+
+	google-pprof:
+	https://gperftools.github.io/gperftools/cpuprofile.html
+
 -------------------------------------------------------------
 
 Limitations:
 
-	the add-tests.sh file occasionally fails and the lab2_add.gp is unable to create all the images.
-
+	Although this is expected, the list functions often fail for high thread
+	counts without protection
 
 ------------------------------------------------------------
 
@@ -59,46 +72,84 @@ Limitations:
 QUESTIONS
 ======================
 
-2.1.1
-It takes many iterations before errors are seen because the chance of two threads calling add() at the same time is much smaller for low numbers.
+2.3.1
+-----
 
-A significantly smaller number of iterations seldom fails because it is unlikely that two add
-calls will be made at the same time.
+For the 1 and 2 thread lists, most of the time is spent performing the
+SortedList operations, such as insertion, deletion, and length checking.
 
+This is because, for low thread counts, there is not much contention for access
+to the lists, since the likelihood of two threads accessing the list
+simultaneously is low. So, rather than spending large amounts of time waiting
+for access to a critical section, the threads act independently for the majority
+of the time.
 
+For the high-thread spin-lock tests, most of the time is spent waiting on the
+spin-locks, since spin-locks perform busy waits that do not allow the processor
+to perform more useful tasks while waiting on a critical section.
 
-2.1.2
-The --yield runs are much slower because each yield call adds another context switch, and context switching is very time intensive. 
-
-The additional time corresponds to these context switches, and to the overhead of creating and joining threads. 
-
-If we use the --yield option, it is unlikely that we will get accurate per-operation timings, unless we are able to know with certainty how long each context switch will take and take that into account in our calculations. We could do this by putting our yield call in a helper function that tracks the time taken for the yields, and subtract that time from our total. 
-
-
-
-2.1.3
-The average cost per operation drops with increasing iterations because the cost of creating and joining threads, and other setup tasks, becomes less significant compared to the total cost, since these two operations remain relatively constant.
-
-If we take a large number of iterations, the setup costs become insignificant compared to the total cost, and the resulting per-iteration cost is much more accurate.
-
-
-2.1.4
-The operations perform similarly for low numbers of threads because, although the critical section for the unprotected add is not locked, each thread only enters the critical section for a short time, and it is unlikely that two threads will access it at the same time.
-
-The three protected operations slow down as the number of threads rises because, with more threads, there is a higher likelihood that two threads will try to access the critical section at the same time, meaning that more threads will have to wait.
+For the high-thread mutex tests, most of the time is spent performing the list
+operations, as with the low-thread tests. This is because mutex locks use
+blocking, and allow the processor to perform more useful tasks while waiting on
+the locks.
 
 
----
+2.3.2
+-----
 
-2.2.1
+Most of the CPU time in the spin-lock version of the list exerciser for large
+thread count is spent waiting for access to critical sections. From the
+profiler, these sections are:
 
-For the add graph, the mutex lock initially has a sharp rise in cost per number of threads, but then evens out later. This is likely because for low thread counts, the threads do not have to wait long, if at all, to access the critical section, because the likelihood of overlap is small.
+   586    586  287:         while (__sync_lock_test_and_set(&(list->spin_lock), 1))
+     4      4  288:             continue;
 
-For the list graph, the cost per thread count rises at a fairly consistent linear rate; this is probably because the critical section is much longer. Inserting an element, rather than simply modifying a variable, is much more expensive, and so even for low thread counts, more time is spent waiting.
+
+   541    541  354:         while (__sync_lock_test_and_set(&(list->spin_lock), 1))
+     1      1  355:             continue;
+
+This operation is so expensive for large thread counts because, with more
+threads trying to access the same lists, more time must be spent by each waiting
+for the critical section to available, as there is more contention. Since only
+one thread at a time can access each list, and all other threads have to wait to
+access the list, more time is spent waiting.
 
 
-2.2.2
+2.3.3
+-----
 
-During the protected list operations, spin locks initially performed comparably to mutex locks, but experienced a sharp increase in cost with a higher thread count. Both mutex locks and spin locks had relatively linear cost increases with a higher thread count, but the spin lock had a spike in steepness at around 8 threads.
+The average lock-wait time rises so dramatically with the number of contending
+threads because increased contention for access to critical sections means that
+more time must be spent by each thread waiting. Although mutex locks allow
+blocking, if the processor does not have any other tasks to perform, it still
+has to wait for access to the critical section.
 
-This performance difference is likely because spin locks spend a lot of time polling while they wait for a lock, which ties up the CPU and prevents it from performing more useful tasks, while mutex locks use blocking, allowing the CPU more freedom. Blocking involves more overhead costs, but polling in a scenario where many threads are trying to access a critical section causes significant wait times.
+The completion time per operation rises less dramatically with the number of
+contending threads because it factors in the time spent in contention and the
+time for each context switch, which increases with more threads.
+
+The wait time can go up faster than the mean completion time because the wait
+time for different threads can overlap. For this reason, the wait time rises
+much faster than the completion time.
+
+
+2.3.4
+-----
+
+The performance of the synchronized methods improves as the number of lists
+increases. This occurs for several reasons. Since there are more lists to store
+the same amount of information, there is a lower chance of contention in each
+list, resulting in shorter average wait times. Additionally, each sublist is
+shorter than the original list, and so operations like inserting and lookups
+will run faster.
+
+The throughput should continue to increase as the number of lists increases,
+until the benefit of having lower conention per list is outweighed by the higher
+cost of initializing, finding the length of, and deleting from lists. If there
+are too many lists, very few elements will be contained in each list, if any,
+and balancing becomes an issue.
+
+It does not appear to be true from the curves; partitioning the list has the
+added benefits of making length-dependent operations faster, thus reducing the
+average time spend inside the critical section. This decreases the chances of
+contention more than simply having fewer threads contending for a single list.

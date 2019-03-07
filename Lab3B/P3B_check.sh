@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# sanity check script for Project 4B
+# sanity check script for Project 3B
 #	extract tar file
 #	required README fields (ID, EMAIL, NAME)
 #	required Makefile targets (clean, dist, graphs, tests)
@@ -12,19 +12,16 @@
 #	error message for nonexistent input file
 #	identical output for trivial test case
 #
-LAB="lab3a"
+LAB="lab3b"
 README="README"
 MAKEFILE="Makefile"
 
 EXPECTED=""
-EXPECTEDS=".c"
-PGM="lab3a"
+EXPECTEDS=""
+PGM="lab3b"
 PGMS="$PGM"
 
-SUFFIXES="c cc cpp"
-
-IMAGE="trivial.img"
-OUTPUT="trivial.csv"
+SUFFIXES=""
 
 LIBRARY_URL="www.cs.ucla.edu/classes/cs111/Software"
 PROJECT_URL="www.cs.ucla.edu/classes/cs111/Samples"
@@ -34,6 +31,7 @@ EXIT_ARG=1
 EXIT_ERR=2
 
 TIMEOUT=1
+MIN_TESTS=20
 
 let errors=0
 
@@ -149,12 +147,6 @@ let errors+=$?
 checkTarget dist
 let errors+=$?
 
-echo "... checking for required compillation options"
-checkMakefile Wall
-let errors+=$?
-checkMakefile Wextra
-let errors+=$?
-
 # make sure we can build the expected program
 echo "... building default target(s)"
 make 2> STDERR
@@ -236,32 +228,42 @@ else
 fi
 
 echo
-
-# make sure we have a test image and gloden output
-downLoad $IMAGE $PROJECT_URL
-downLoad $OUTPUT $PROJECT_URL
-
-echo
-
-# run the program on the image and compare the output with golden
-echo ... running $PGM on test image $IMAGE
-timeout $TIMEOUT ./$PGM $IMAGE | sort > TEST.csv
-testRC $? 0
-if [ $? -ne 0 ]; then
-	let errors+=1
-fi
-
-for t in SUPER GROUP BFREE IFREE INODE DIRENT INDIRECT
+let b=1
+# run through all of the supplied test cases
+while :
 do
-	grep $t $OUTPUT | sort > GOLDEN.csv
-	grep $t TEST.csv > TEST
-	cmp GOLDEN.csv TEST
+	# download the samples and error output
+	pfx="P3B-test_"
+	for s in csv err
+	do
+		f=$pfx$b.$s
+		wget $PROJECT_URL/$f > /dev/null 2> /dev/null
+		ret=$?
+		if [ $b -lt $MIN_TESTS -a $ret -ne 0 ]; then
+			echo "Unable to download testcase $f from $PROJECT_URL"
+		fi
+	done
+	if [ $ret -ne 0 ]; then
+		break;
+	fi
+
+	# run the program on the sample, and compare the output
+	echo "... executing test case $pfx$b"
+	timeout $TIMEOUT ./$PGM $pfx$b.csv | sort > TEST.out
+	sort $pfx$b.err > GOLDEN.out
+	cmp GOLDEN.out TEST.out
 	if [ $? -ne 0 ]; then
-		echo "    $t ... OUTPUT DOES NOT MATCH"
+		echo "        incorrect output for $b.csv"
+		echo "YOUR OUTPUT ..."
+		cat TEST.out
+		echo "EXPECTED OUTPUT ..."
+		cat GOLDEN.out
+		echo "=========="
 		let errors+=1
 	else
-		echo "    $t ... all" `wc -l < GOLDEN.csv` "output lines match"
+		echo "        all" `wc -l < GOLDEN.out` "lines agree"
 	fi
+	let b+=1
 done
 
 echo

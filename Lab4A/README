@@ -1,0 +1,36 @@
+NAME: Mudith Mallajosyula
+EMAIL: mudithm@g.ucla.edu
+ID: 404937201
+
+SLIPDAYS: 0
+
+----------------------------------------------------
+
+Serial Number: 	BBGW18031175
+MAC Address:	2CF7F1067896
+
+
+Included Files:
+
+screenshots of various stages of the lab
+
+Makefile -- for creating the tarball and cleaning it
+
+The Makefile include the following targets:
+
+	dist: creates the tarball consisting of the screenshots, Makefile,
+		and the README.
+
+---------------------------------------------------------
+
+Sources:
+	
+	Links in the spec
+	
+-------------------------------------------------------------
+
+Limitations:
+
+	N/A
+
+------------------------------------------------------------

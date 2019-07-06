@@ -1,0 +1,62 @@
+NAME: Mudith Mallajosyula
+EMAIL: mudithm@g.ucla.edu
+ID: 404937201
+
+SLIPDAYS: 0
+
+----------------------------------------------------
+
+Included Files:
+
+lab4b_tcp.c -- source file, that reports temperature measurements
+		   taken on the beaglebone to a tcp server. Accepts arguments:
+	
+		--scale=F, C:		selects either fahrenheit or celsius 
+							for reporting
+	
+		--period=#:			sets the time between temperature reports
+	
+		--log=filename:		appends reports and commands to a log file
+	
+	Additionally, the program accepts commands from the server as it runs:
+	
+		SCALE=F,C: 	selects either fahrenheit or celsius for reporting
+
+		PERIOD=#: 	sets the time between temperature reports
+
+		STOP:		stops generating reports
+
+		START: 		resumes generating reports
+
+		LOG <...>: 	Log the line to the log file, if it exists
+
+		OFF: 		shuts the program down
+
+lab4b_tls.c -- source file. Does the same as above, but connecting with SSL
+				to a TLS server instead.
+
+
+Makefile -- for creating the tarball and cleaning it
+
+The Makefile include the following targets:
+
+	build: build the executables
+	clean: 	removes the tarball and executable
+	dist: 	creates the tarball consisting of the screenshots, Makefile,
+			and the README.
+
+
+---------------------------------------------------------
+
+Sources:
+	
+	Links in the spec
+	Timothy Gu's helpful post on Piazza regarding getaddrinfo()
+	
+-------------------------------------------------------------
+
+Limitations:
+
+	limited testing
+
+------------------------------------------------------------

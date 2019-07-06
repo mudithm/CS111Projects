@@ -1,0 +1,64 @@
+NAME: Mudith Mallajosyula
+EMAIL: mudithm@g.ucla.edu
+ID: 404937201
+
+SLIPDAYS: 0
+
+----------------------------------------------------
+
+Included Files:
+
+lab4b.c -- main source file, that reports temperature measurements
+		   taken on the beaglebone. Accepts arguments:
+	
+		--scale=F, C:		selects either fahrenheit or celsius 
+							for reporting
+	
+		--period=#:			sets the time between temperature reports
+	
+		--log=filename:		appends reports and commands to a log file
+	
+	Additionally, the program accepts commands from STDIN as it runs:
+	
+		SCALE=F,C: 	selects either fahrenheit or celsius for reporting
+
+		PERIOD=#: 	sets the time between temperature reports
+
+		STOP:		stops generating reports
+
+		START: 		resumes generating reports
+
+		LOG <...>: 	Log the line to the log file, if it exists
+
+		OFF: 		shuts the program down
+
+	
+	When the program receives a signal from a button, it will shut down.
+
+
+
+Makefile -- for creating the tarball and cleaning it
+
+The Makefile include the following targets:
+
+	check: 	performs basic smoke checks for the program
+	clean: 	removes the tarball and executable
+	dist: 	creates the tarball consisting of the screenshots, Makefile,
+			and the README.
+
+
+---------------------------------------------------------
+
+Sources:
+	
+	Links in the spec
+	
+-------------------------------------------------------------
+
+Limitations:
+
+	I was unable to check if I could process multiple commands passed within
+    100 ms of eachother, although if STDIN is buffered this should not be an
+    issue.
+
+------------------------------------------------------------
